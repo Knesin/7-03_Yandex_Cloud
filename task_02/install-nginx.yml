@@ -1,0 +1,29 @@
+---
+- name: Install and enable Nginx
+  hosts: webservers
+  become: yes
+  vars:
+    ansible_ssh_user: user
+
+  pre_tasks:
+    - name: Wait for ssh via ProxyCommand
+      wait_for_connection:
+        timeout: 300
+
+  tasks:
+    - name: Install nginx package
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Ensure nginx is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Check nginx HTTP response
+      ansible.builtin.uri:
+        url: http://localhost
+        status_code: 200

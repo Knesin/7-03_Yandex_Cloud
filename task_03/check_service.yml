@@ -1,0 +1,26 @@
+---
+- name: Check run service
+  hosts: database
+  become: yes
+  vars:
+    ansible_ssh_user: user
+    services_to_check: 
+     - postgresql
+     - nginx
+
+      
+  tasks:
+    - name: Collect service facts
+      ansible.builtin.service_facts:
+
+    - name: Show running services
+      ansible.builtin.debug:
+        msg: "{{ item }} → {{ ansible_facts.services[item].state | default('not found') }}"
+      loop: "{{ services_to_check }}"
+
+    - name: Query PostgreSQL version via psql
+      shell: "sudo -u postgres psql -t -c 'SELECT version();'"
+      register: pg_ver
+
+    - debug:
+        msg: "{{ pg_ver.stdout }}"
